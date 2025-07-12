@@ -4,7 +4,7 @@ import urllib.parse
 
 # הגדרת הקונפיגורציה של גוגל
 CLIENT_ID = "242031868885-13jjtfomjjkb8kqpmu4a05sr3o45bd4h.apps.googleusercontent.com"
-REDIRECT_URI = "https://usermaster.streamlit.app"  # כתובת ה-URL של האפליקציה שלך ב-Streamlit
+REDIRECT_URI = "https://usermaster-demo.streamlit.app"  # כתובת ה-URL של האפליקציה שלך ב-Streamlit
 SCOPE = "https://www.googleapis.com/auth/gmail.readonly"
 OAUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 
