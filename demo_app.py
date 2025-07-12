@@ -8,7 +8,7 @@ REDIRECT_URI = "https://usermaster.streamlit.app"  # כתובת ה-URL של הא
 SCOPE = "https://www.googleapis.com/auth/gmail.readonly"
 OAUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 
-# בניית URL ההרשאה
+# בנה את ה-URL של ההרשאות
 params = {
     "client_id": CLIENT_ID,
     "redirect_uri": REDIRECT_URI,
@@ -30,7 +30,6 @@ Welcome to the **UserMaster** demo. This is a visual simulation of how the app w
 Please follow the steps below to simulate an email scan.
 """)
 
-# Step 1: Connect Email
 st.subheader("🔐 Step 1: Enter Your Email")
 email = st.text_input("Enter your email address")
 agree = st.checkbox("I agree to the [Privacy Policy](https://user-master.com/privacy) and [Terms of Service](https://user-master.com/terms)")
