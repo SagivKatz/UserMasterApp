@@ -94,14 +94,9 @@ else:
 
     agree = st.checkbox("I agree to the [Privacy Policy](https://user-master.com/privacy) and [Terms of Service](https://user-master.com/terms)", value=False)
 
-    if st.button("🚀 Start Scanning") and agree and email:
-        auth_url = build_auth_url()
-        js = f"""
-        <script>
-            window.open("{auth_url}", "_self");
-        </script>
-        """
-        st.components.v1.html(js, height=0)
+if st.button("🚀 Start Scanning") and agree and email:
+    auth_url = build_auth_url()
+    st.experimental_redirect(auth_url)
 
     # 🔴 הסרת הקישור הידני – לא צריך אותו:
     # st.markdown(f"[Click here to authorize with Google]({build_auth_url()})")
