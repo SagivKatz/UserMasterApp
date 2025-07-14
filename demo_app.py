@@ -97,5 +97,6 @@ else:
 if st.button("🚀 Start Scanning") and agree and email:
     auth_url = build_auth_url()
     st.markdown(f'<meta http-equiv="refresh" content="0;url={auth_url}">', unsafe_allow_html=True)
+  
     # 🔴 הסרת הקישור הידני – לא צריך אותו:
     # st.markdown(f"[Click here to authorize with Google]({build_auth_url()})")
