@@ -94,11 +94,10 @@ else:
 
     agree = st.checkbox("I agree to the [Privacy Policy](https://user-master.com/privacy) and [Terms of Service](https://user-master.com/terms)", value=False)
 
-    if st.button("🚀 Start Scanning") and agree and email:
-        auth_url = build_auth_url()
-        # 🟢 הפניה תקינה לדפדפן החיצוני (בלי meta refresh או iframe)
-        st.markdown("Click the button below to authorize with Google:")
-st.markdown(
-    f'<a href="{auth_url}" target="_blank"><button style="padding:10px 20px;font-size:16px;">🔓 Authorize with Google</button></a>',
-    unsafe_allow_html=True
-)
+  if st.button("🚀 Start Scanning") and agree and email:
+    auth_url = build_auth_url()
+    st.markdown("Click the button below to authorize with Google:")
+    st.markdown(
+        f'<a href="{auth_url}" target="_blank"><button style="padding:10px 20px;font-size:16px;">🔓 Authorize with Google</button></a>',
+        unsafe_allow_html=True
+    )
