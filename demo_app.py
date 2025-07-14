@@ -2,9 +2,8 @@ import streamlit as st
 import urllib.parse
 import os
 import requests
-import json
 from dotenv import load_dotenv
-from gmail_utils import scan_inbox  # משתמשים רק בסריקה
+from gmail_utils import scan_inbox  # פונקציית סריקה מתוך gmail_utils
 
 load_dotenv()
 
@@ -33,7 +32,7 @@ def build_auth_url():
     return AUTH_URL + "?" + urllib.parse.urlencode(params)
 
 # ============================
-# פונקציה לשליפת token בעזרת הקוד
+# פונקציה להמרת הקוד ל-token
 # ============================
 def exchange_code_for_token(code):
     data = {
@@ -47,11 +46,10 @@ def exchange_code_for_token(code):
     return response.json()
 
 # ============================
-# פונקציה לבניית Gmail Service
+# בניית שירות Gmail מה-token
 # ============================
 def build_service(access_token):
     from googleapiclient.discovery import build
-    from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
 
     creds = Credentials(
@@ -62,21 +60,21 @@ def build_service(access_token):
         client_secret=CLIENT_SECRET,
         scopes=[SCOPE]
     )
-    service = build('gmail', 'v1', credentials=creds)
-    return service
+    return build('gmail', 'v1', credentials=creds)
 
 # ============================
 # ממשק ראשי
 # ============================
+st.set_page_config(page_title="UserMaster Demo", page_icon="📕")
 st.title("📕 UserMaster – Account Scanner Demo")
 st.write("Welcome to the UserMaster demo. This is a visual simulation of how the app will work once access is approved.")
 
-# בדיקה אם המשתמש הגיע עם הקוד
+# בדיקה אם המשתמש חזר עם הקוד
 query_params = st.query_params
 if "code" in query_params:
     code = query_params["code"][0]
     st.success("✅ Authorization successful. Scanning your inbox...")
-    
+
     token_data = exchange_code_for_token(code)
     access_token = token_data.get("access_token")
 
@@ -89,8 +87,8 @@ if "code" in query_params:
         for i, subject in enumerate(subjects, 1):
             st.write(f"{i}. {subject}")
 
+# אין עדיין code – מציגים טופס התחלה
 else:
-    # אם אין code – הצג טופס התחלה
     st.markdown("### 🔐 Step 1: Enter Your Email")
     email = st.text_input("Enter your email address")
 
@@ -98,8 +96,12 @@ else:
 
     if st.button("🚀 Start Scanning") and agree and email:
         auth_url = build_auth_url()
-        js = f"<script>window.location.href = '{auth_url}'</script>"
-        st.components.v1.html(js)
+        js = f"""
+        <script>
+            window.open("{auth_url}", "_self");
+        </script>
+        """
+        st.components.v1.html(js, height=0)
 
-    # קישור רזרבי
-    st.markdown(f"[Click here to authorize with Google]({build_auth_url()})")
+    # 🔴 הסרת הקישור הידני – לא צריך אותו:
+    # st.markdown(f"[Click here to authorize with Google]({build_auth_url()})")
