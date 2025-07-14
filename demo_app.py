@@ -91,17 +91,14 @@ if "code" in query_params:
 else:
     st.markdown("### 🔐 Step 1: Enter Your Email")
     email = st.text_input("Enter your email address")
+
     agree = st.checkbox("I agree to the [Privacy Policy](https://user-master.com/privacy) and [Terms of Service](https://user-master.com/terms)", value=False)
 
-    if agree and email:
+    if st.button("🚀 Start Scanning") and agree and email:
         auth_url = build_auth_url()
+        # 🟢 הפניה תקינה לדפדפן החיצוני (בלי meta refresh או iframe)
+        st.write("Redirecting to Google for authorization...")
         st.markdown(
-            f'''
-            <a href="{auth_url}" target="_self">
-                <button style="background-color:#ff4b4b;color:white;padding:8px 16px;border:none;border-radius:4px;">
-                    🚀 Start Scanning
-                </button>
-            </a>
-            ''',
+            f'<script>window.location.href="{auth_url}";</script>',
             unsafe_allow_html=True
         )
