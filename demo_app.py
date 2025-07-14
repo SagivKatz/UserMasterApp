@@ -72,7 +72,7 @@ st.title("📕 UserMaster – Account Scanner Demo")
 st.write("Welcome to the UserMaster demo. This is a visual simulation of how the app will work once access is approved.")
 
 # בדיקה אם המשתמש הגיע עם הקוד
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 if "code" in query_params:
     code = query_params["code"][0]
     st.success("✅ Authorization successful. Scanning your inbox...")
