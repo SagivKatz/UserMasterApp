@@ -10,6 +10,10 @@ def exchange_code_for_token(auth_code):
     client_secret = os.getenv("CLIENT_SECRET")
     redirect_uri = os.getenv("REDIRECT_URI")
 
+    print("DEBUG – client_id:", client_id)
+    print("DEBUG – client_secret:", client_secret)
+    print("DEBUG – redirect_uri:", redirect_uri)
+
     token_url = "https://oauth2.googleapis.com/token"
     data = {
         "code": auth_code,
@@ -19,7 +23,9 @@ def exchange_code_for_token(auth_code):
         "grant_type": "authorization_code",
     }
 
+    import requests
     response = requests.post(token_url, data=data)
+
     if response.status_code == 200:
         return response.json()
     else:
