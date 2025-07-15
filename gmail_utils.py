@@ -1,45 +1,13 @@
-import os
-import pickle
 import requests
-from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from dotenv import load_dotenv
-
-# Load environment variables from .env
-load_dotenv()
-
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
-
-def authenticate_gmail():
-    creds = None
-    try:
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    except FileNotFoundError:
-        pass
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'client_secret.json',
-                SCOPES
-            )
-            creds = flow.run_local_server(port=0)
-
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-
-    service = build('gmail', 'v1', credentials=creds)
-    return service
-
 
 def exchange_code_for_token(auth_code):
-    client_id = os.getenv("GOOGLE_CLIENT_ID")
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    """Exchange the authorization code for an access token."""
+    import os
+
+    client_id = os.getenv("CLIENT_ID")
+    client_secret = os.getenv("CLIENT_SECRET")
     redirect_uri = os.getenv("REDIRECT_URI")
 
     token_url = "https://oauth2.googleapis.com/token"
@@ -59,20 +27,26 @@ def exchange_code_for_token(auth_code):
 
 
 def authenticate_gmail_with_token(access_token):
+    """Authenticate with Gmail API using the access token."""
     creds = Credentials(token=access_token)
     service = build('gmail', 'v1', credentials=creds)
     return service
 
 
-def scan_inbox(service, max_results=10):
-    results = service.users().messages().list(userId='me', maxResults=max_results).execute()
-    messages = results.get('messages', [])
-    subjects = []
+def scan_inbox(service):
+    """Scan inbox and return recent email subjects."""
+    try:
+        result = service.users().messages().list(userId='me', maxResults=5).execute()
+        messages = result.get('messages', [])
+        subjects = []
 
-    for msg in messages:
-        msg_data = service.users().messages().get(userId='me', id=msg['id']).execute()
-        headers = msg_data['payload'].get('headers', [])
-        subject = next((h['value'] for h in headers if h['name'] == 'Subject'), '(No Subject)')
-        subjects.append(subject)
+        for msg in messages:
+            msg_data = service.users().messages().get(userId='me', id=msg['id'], format='metadata', metadataHeaders=['Subject']).execute()
+            headers = msg_data['payload']['headers']
+            subject = next((header['value'] for header in headers if header['name'] == 'Subject'), "(No Subject)")
+            subjects.append(subject)
 
-    return subjects
+        return subjects
+
+    except Exception as e:
+        return [f"Error scanning inbox: {e}"]
