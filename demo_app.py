@@ -50,8 +50,8 @@ if email and agree:
         st.markdown(f'<a href="{auth_url}" target="_blank"><button>🔐 Authorize with Google</button></a>', unsafe_allow_html=True)
 
 # Check if redirected back with ?code= in URL
-parsed_url = urlparse.urlparse(st.experimental_get_query_params())
-query_params = st.experimental_get_query_params()
+parsed_url = urlparse.urlparse(st.query_params)
+query_params = st.query_params
 auth_code = query_params.get("code", [None])[0]
 
 if auth_code:
