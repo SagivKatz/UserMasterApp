@@ -1,10 +1,31 @@
-from gmail_utils import authenticate_gmail, scan_inbox
+import os
+import requests
+from googleapiclient.discovery import build
+from dotenv import load_dotenv
 
-def main():
-    service = authenticate_gmail()
-    subjects = scan_inbox(service, max_results=10)
-    for i, subject in enumerate(subjects, 1):
-        print(f"{i}. {subject}")
+load_dotenv()
 
-if __name__ == "__main__":
-    main()
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+
+def authenticate_gmail(auth_code):
+    token_url = 'https://oauth2.googleapis.com/token'
+    data = {
+        'code': auth_code,
+        'client_id': os.getenv("CLIENT_ID"),
+        'client_secret': os.getenv("CLIENT_SECRET"),
+        'redirect_uri': os.getenv("REDIRECT_URI"),
+        'grant_type': 'authorization_code'
+    }
+
+    response = requests.post(token_url, data=data)
+    if response.status_code != 200:
+        raise Exception(f"Failed to get access token: {response.text}")
+    
+    tokens = response.json()
+    access_token = tokens.get('access_token')
+
+    from google.oauth2.credentials import Credentials
+    creds = Credentials(token=access_token)
+
+    service = build('gmail', 'v1', credentials=creds)
+    return service
