@@ -1,57 +1,71 @@
 import streamlit as st
-from urllib.parse import urlencode
-import os
+import urllib.parse as urlparse
+from gmail_utils import exchange_code_for_token, authenticate_gmail_with_token, scan_inbox
 from dotenv import load_dotenv
-from gmail_utils import authenticate_gmail, scan_inbox
+import os
 
 load_dotenv()
 
-st.set_page_config(page_title="UserMaster – Account Scanner Demo")
+st.set_page_config(page_title="UserMaster – Account Scanner Demo", page_icon="📕", layout="centered")
 
+# Apply basic CSS
+with open("style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# Title
 st.title("📕 UserMaster – Account Scanner Demo")
-st.markdown(
-    "Welcome to the UserMaster demo. This is a visual simulation of how the app will work once access is approved."
-)
+st.markdown("""
+Welcome to the UserMaster demo. This is a visual simulation of how the app will work once access is approved.
+""")
 
-st.markdown("### 🔐 Step 1: Enter Your Email")
+# Step 1 – Enter Email
+st.subheader("🔐 Step 1: Enter Your Email")
+
 email = st.text_input("Enter your email address")
 
 agree = st.checkbox("I agree to the [Privacy Policy](https://user-master.com/privacy) and [Terms of Service](https://user-master.com/terms)")
 
-if st.button("🚀 Start Scanning"):
-    if not email:
-        st.error("Please enter your email address.")
-    elif not agree:
-        st.error("You must agree to the Privacy Policy and Terms of Service.")
-    else:
-        st.session_state["email"] = email
-        st.session_state["agreed"] = agree
-        st.success("✅ Step 1 completed. Please authorize below.")
+# Build OAuth URL
+def build_auth_url():
+    client_id = os.getenv("CLIENT_ID")
+    redirect_uri = os.getenv("REDIRECT_URI")
+    scope = "https://www.googleapis.com/auth/gmail.readonly"
+    response_type = "code"
+    auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={client_id}&"
+        f"redirect_uri={redirect_uri}&"
+        f"response_type={response_type}&"
+        f"scope={scope}&"
+        f"access_type=offline&"
+        f"prompt=consent"
+    )
+    return auth_url
 
-        auth_params = {
-            "client_id": os.getenv("CLIENT_ID"),
-            "redirect_uri": os.getenv("REDIRECT_URI"),
-            "response_type": "code",
-            "scope": "https://www.googleapis.com/auth/gmail.readonly",
-            "access_type": "offline",
-            "prompt": "consent"
-        }
+# Start scanning only if consent is checked
+if email and agree:
+    if st.button("🚀 Start Scanning"):
+        st.warning("Click the button below to authorize with Google:")
+        auth_url = build_auth_url()
+        st.markdown(f'<a href="{auth_url}" target="_blank"><button>🔐 Authorize with Google</button></a>', unsafe_allow_html=True)
 
-        auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(auth_params)}"
-        st.markdown(f"Click the button below to authorize with Google:")
-        st.markdown(f"[🔐 Authorize with Google]({auth_url})")
+# Check if redirected back with ?code= in URL
+parsed_url = urlparse.urlparse(st.experimental_get_query_params())
+query_params = st.experimental_get_query_params()
+auth_code = query_params.get("code", [None])[0]
 
-# Handle redirect with `?code=...`
-code = st.query_params.get("code")
-if code:
+if auth_code:
     st.success("Authorization successful. Scanning your inbox...")
-
     try:
-        service = authenticate_gmail(code)
-        subjects = scan_inbox(service)
-        st.markdown("### 📬 Recent Email Subjects:")
-        for subject in subjects:
-            st.write("•", subject)
+        token_data = exchange_code_for_token(auth_code)
+        access_token = token_data.get("access_token")
+        if access_token:
+            service = authenticate_gmail_with_token(access_token)
+            subjects = scan_inbox(service)
+            st.write("📬 Recent email subjects:")
+            for i, subject in enumerate(subjects, 1):
+                st.write(f"{i}. {subject}")
+        else:
+            st.error("❌ Failed to get access token from Google.")
     except Exception as e:
-        st.error("❌ Failed to get access token from Google.")
-        st.exception(e)
+        st.error(f"Something went wrong: {e}")
