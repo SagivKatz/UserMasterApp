@@ -2,8 +2,9 @@ import streamlit as st
 from gmail_utils import exchange_code_for_token, authenticate_gmail_with_token, scan_inbox
 from dotenv import load_dotenv
 import os
-
-load_dotenv()
+if os.path.exists(".env"):
+    from dotenv import load_dotenv
+    load_dotenv()
 
 st.set_page_config(page_title="UserMaster – Account Scanner Demo", page_icon="📕", layout="centered")
 
