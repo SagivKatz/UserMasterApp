@@ -1,5 +1,4 @@
 import streamlit as st
-import urllib.parse as urlparse
 from gmail_utils import exchange_code_for_token, authenticate_gmail_with_token, scan_inbox
 from dotenv import load_dotenv
 import os
@@ -31,49 +30,45 @@ def build_auth_url():
     redirect_uri = os.getenv("REDIRECT_URI")
     scope = "https://www.googleapis.com/auth/gmail.readonly"
     response_type = "code"
+    access_type = "offline"
+    prompt = "consent"
+
     auth_url = (
-        f"https://accounts.google.com/o/oauth2/v2/auth?"
-        f"client_id={client_id}&"
-        f"redirect_uri={redirect_uri}&"
-        f"response_type={response_type}&"
-        f"scope={scope}&"
-        f"access_type=offline&"
-        f"prompt=consent"
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        f"?client_id={client_id}"
+        f"&redirect_uri={redirect_uri}"
+        f"&response_type={response_type}"
+        f"&scope={scope}"
+        f"&access_type={access_type}"
+        f"&prompt={prompt}"
     )
     return auth_url
 
-# Start scanning only if consent is checked
+# Step 2 – OAuth redirect
 if email and agree:
     if st.button("🚀 Start Scanning"):
         st.warning("Click the button below to authorize with Google:")
         auth_url = build_auth_url()
         st.markdown(f'<a href="{auth_url}" target="_blank"><button>🔐 Authorize with Google</button></a>', unsafe_allow_html=True)
 
-# Check if redirected back with ?code= in URL
+# Step 3 – Check for ?code= in URL (after redirect)
 query_params = st.query_params
 auth_code = query_params.get("code", [None])[0]
 
 if auth_code:
     st.success("✅ Authorization successful. Scanning your inbox...")
-
     try:
         token_data = exchange_code_for_token(auth_code)
         access_token = token_data.get("access_token")
 
         if access_token:
-            # צור קרדנציאל מה-token
-            creds = Credentials(token=access_token)
-            service = build("gmail", "v1", credentials=creds)
-
-            # סרוק את התיבה
+            service = authenticate_gmail_with_token(access_token)
             subjects = scan_inbox(service)
 
-            # הצג את התוצאות
-            st.write("📬 Recent email subjects:")
+            st.write("📧 Recent email subjects:")
             for i, subject in enumerate(subjects, 1):
                 st.write(f"{i}. {subject}")
         else:
             st.error("❌ Failed to get access token from Google.")
-
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+        st.error(f"An error occurred: {e}")
