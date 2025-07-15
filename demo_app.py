@@ -50,22 +50,30 @@ if email and agree:
         st.markdown(f'<a href="{auth_url}" target="_blank"><button>🔐 Authorize with Google</button></a>', unsafe_allow_html=True)
 
 # Check if redirected back with ?code= in URL
-parsed_url = urlparse.urlparse(st.query_params)
 query_params = st.query_params
 auth_code = query_params.get("code", [None])[0]
 
 if auth_code:
-    st.success("Authorization successful. Scanning your inbox...")
+    st.success("✅ Authorization successful. Scanning your inbox...")
+
     try:
         token_data = exchange_code_for_token(auth_code)
         access_token = token_data.get("access_token")
+
         if access_token:
-            service = authenticate_gmail_with_token(access_token)
+            # צור קרדנציאל מה-token
+            creds = Credentials(token=access_token)
+            service = build("gmail", "v1", credentials=creds)
+
+            # סרוק את התיבה
             subjects = scan_inbox(service)
+
+            # הצג את התוצאות
             st.write("📬 Recent email subjects:")
             for i, subject in enumerate(subjects, 1):
                 st.write(f"{i}. {subject}")
         else:
             st.error("❌ Failed to get access token from Google.")
+
     except Exception as e:
-        st.error(f"Something went wrong: {e}")
+        st.error(f"An error occurred: {str(e)}")
