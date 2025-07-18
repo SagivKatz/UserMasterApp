@@ -2,6 +2,7 @@ import streamlit as st
 from gmail_utils import exchange_code_for_token, authenticate_gmail_with_token, scan_inbox
 from dotenv import load_dotenv
 import os
+
 if os.path.exists(".env"):
     from dotenv import load_dotenv
     load_dotenv()
@@ -27,8 +28,8 @@ agree = st.checkbox("I agree to the [Privacy Policy](https://user-master.com/pri
 
 # Build OAuth URL
 def build_auth_url():
-    client_id = os.getenv("CLIENT_ID")
-    redirect_uri = os.getenv("REDIRECT_URI")
+    client_id = st.secrets["CLIENT_ID"]
+    redirect_uri = st.secrets["REDIRECT_URI"]
     scope = "https://www.googleapis.com/auth/gmail.readonly"
     response_type = "code"
     access_type = "offline"

@@ -1,3 +1,4 @@
+import streamlit as st
 import os
 import requests
 from google.oauth2.credentials import Credentials
@@ -5,9 +6,9 @@ from googleapiclient.discovery import build
 
 def exchange_code_for_token(auth_code):
     """Exchange the authorization code for an access token."""
-    client_id = os.getenv("CLIENT_ID")
-    client_secret = os.getenv("CLIENT_SECRET")
-    redirect_uri = os.getenv("REDIRECT_URI")
+    client_id = st.secrets["CLIENT_ID"]
+    client_secret = st.secrets["CLIENT_SECRET"]
+    redirect_uri = st.secrets["REDIRECT_URI"]
 
     print("DEBUG – client_id:", client_id)
     print("DEBUG – client_secret:", client_secret)
