@@ -10,6 +10,12 @@ def exchange_code_for_token(auth_code):
     client_secret = st.secrets["CLIENT_SECRET"]
     redirect_uri = st.secrets["REDIRECT_URI"]
 
+    st.code(f"""
+    client_id length: {len(client_id)}
+    client_secret length: {len(client_secret)}
+    redirect_uri: {redirect_uri}
+    """)
+
     os.write(1, b'Something was executed sagiv sagiv sagiv.\n')
     print("DEBUG – client_id:", client_id)
     print("DEBUG – client_secret:", client_secret)
