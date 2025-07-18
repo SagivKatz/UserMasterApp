@@ -10,6 +10,7 @@ def exchange_code_for_token(auth_code):
     client_secret = st.secrets["CLIENT_SECRET"]
     redirect_uri = st.secrets["REDIRECT_URI"]
 
+    os.write(1, b'Something was executed sagiv sagiv sagiv.\n')
     print("DEBUG – client_id:", client_id)
     print("DEBUG – client_secret:", client_secret)
     print("DEBUG – redirect_uri:", redirect_uri)
@@ -23,7 +24,11 @@ def exchange_code_for_token(auth_code):
         "grant_type": "authorization_code"
     }
 
-    response = requests.post(token_url, data=data)
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    response = requests.post(token_url, data=data, headers=headers)
     if response.status_code == 200:
         return response.json()
     else:
